@@ -1,4 +1,6 @@
-package it.unicam.cs.mpgc.rpg125681.model;
+package it.unicam.cs.mpgc.rpg125681.model.entity;
+
+import it.unicam.cs.mpgc.rpg125681.model.world.Position;
 
 public abstract class LivingEntity extends Entity implements Movable{
 

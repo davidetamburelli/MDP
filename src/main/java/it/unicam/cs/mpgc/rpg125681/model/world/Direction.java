@@ -1,4 +1,4 @@
-package it.unicam.cs.mpgc.rpg125681.model;
+package it.unicam.cs.mpgc.rpg125681.model.world;
 
 public enum Direction {
     UP(0, -1),

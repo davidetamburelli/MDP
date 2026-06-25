@@ -1,4 +1,4 @@
-package it.unicam.cs.mpgc.rpg125681.model;
+package it.unicam.cs.mpgc.rpg125681.model.world;
 
 import java.util.Objects;
 
