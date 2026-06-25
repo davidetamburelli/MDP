@@ -6,9 +6,9 @@ public abstract class LivingEntity extends Entity implements Movable{
     private int maxHp;
 
     protected LivingEntity(Position position, int id, int maxHp) {
-        super(position, id); //Entity parameters
+        super(position, id);
         this.maxHp = maxHp;
-        this.hp = maxHp; //created with full health
+        this.hp = maxHp;
     }
 
     public void takeDamage(int damage) {
