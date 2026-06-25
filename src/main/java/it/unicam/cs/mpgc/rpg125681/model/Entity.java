@@ -12,7 +12,19 @@ public abstract class Entity {
     public int getId() { return this.id; }
     public Position getPosition() { return this.position; }
 
-    public void moveTo(Position destination) {
-        this.position = destination;
+    protected void setPosition(Position position) {
+        this.position = position;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Entity other)) return false;
+        return this.id == other.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(this.id);
     }
 }

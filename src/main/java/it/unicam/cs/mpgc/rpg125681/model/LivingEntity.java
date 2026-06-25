@@ -1,6 +1,6 @@
 package it.unicam.cs.mpgc.rpg125681.model;
 
-public abstract class LivingEntity extends Entity{
+public abstract class LivingEntity extends Entity implements Movable{
 
     private int hp;
     private int maxHp;
@@ -38,6 +38,10 @@ public abstract class LivingEntity extends Entity{
     public void increaseMaxHp(int increase) {
         if (increase <= 0) throw new IllegalArgumentException("Increase must be positive");
         this.maxHp += increase;
+    }
+
+    public void moveTo(Position destination) {
+        setPosition(destination);
     }
 
     public int getHp() { return this.hp; }
