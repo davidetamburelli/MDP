@@ -2,6 +2,7 @@ package it.unicam.cs.mpgc.rpg125681.model.entity;
 
 import it.unicam.cs.mpgc.rpg125681.model.entity.behavior.BehaviorStrategy;
 import it.unicam.cs.mpgc.rpg125681.model.world.Position;
+import it.unicam.cs.mpgc.rpg125681.model.movement.MovementService;
 
 import java.util.Objects;
 
@@ -20,8 +21,8 @@ public class Enemy extends LivingEntity{
         this.behavior = Objects.requireNonNull(behavior, "behavior");
     }
 
-    public void update(Player target){
-        this.behavior.act(this, target);
+    public void update(Player target, MovementService movement) {
+        this.behavior.act(this, target, movement);
     }
 
     public void attack(LivingEntity target){

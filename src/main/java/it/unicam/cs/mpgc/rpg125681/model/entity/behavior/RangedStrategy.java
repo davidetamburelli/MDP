@@ -2,6 +2,7 @@ package it.unicam.cs.mpgc.rpg125681.model.entity.behavior;
 
 import it.unicam.cs.mpgc.rpg125681.model.entity.Enemy;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Player;
+import it.unicam.cs.mpgc.rpg125681.model.movement.MovementService;
 
 public class RangedStrategy implements BehaviorStrategy {
     private final int attackRange;
@@ -12,11 +13,11 @@ public class RangedStrategy implements BehaviorStrategy {
     }
 
     @Override
-    public void act(Enemy self, Player target) {
+    public void act(Enemy self, Player target, MovementService movement) {
         if (BehaviorStrategy.distance(self.getPosition(), target.getPosition()) <= attackRange) {
             self.attack(target);
         } else {
-            self.moveTo(BehaviorStrategy.stepToward(self.getPosition(), target.getPosition()));
+            movement.move(self, BehaviorStrategy.stepToward(self.getPosition(), target.getPosition()));
         }
     }
 }
