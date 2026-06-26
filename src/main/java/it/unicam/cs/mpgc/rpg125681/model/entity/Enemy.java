@@ -6,7 +6,7 @@ import it.unicam.cs.mpgc.rpg125681.model.movement.MovementService;
 
 import java.util.Objects;
 
-public class Enemy extends LivingEntity{
+public class Enemy extends LivingEntity implements Attacker{
 
     private final int attackPower;
     private final int expReward;
@@ -23,10 +23,6 @@ public class Enemy extends LivingEntity{
 
     public void update(Player target, MovementService movement) {
         this.behavior.act(this, target, movement);
-    }
-
-    public void attack(LivingEntity target){
-        target.takeDamage(this.attackPower);
     }
 
     public int getAttackPower() { return this.attackPower; }
