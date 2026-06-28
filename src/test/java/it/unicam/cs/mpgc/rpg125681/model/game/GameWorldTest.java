@@ -1,6 +1,7 @@
 package it.unicam.cs.mpgc.rpg125681.model.game;
 
 import it.unicam.cs.mpgc.rpg125681.model.entity.Enemy;
+import it.unicam.cs.mpgc.rpg125681.model.entity.Sorcerer;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Warrior;
 import it.unicam.cs.mpgc.rpg125681.model.entity.behavior.MeleeChaseStrategy;
 import it.unicam.cs.mpgc.rpg125681.model.movement.MovementService;
@@ -71,7 +72,7 @@ public class GameWorldTest {
     void getEnemiesIsUnmodifiable() {
         GameMap map = room();
         Warrior hero = new Warrior(new Position(1, 1), 1);
-        Enemy enemy = new Enemy(new  Position(2, 1), 2, 30, 8, 12, new MeleeChaseStrategy());
+        Enemy enemy = new Enemy(new Position(2, 1), 2, 30, 8, 12, new MeleeChaseStrategy());
         GameWorld world = new GameWorld(map, hero, List.of(enemy), new MovementService(map));
         assertThrows(UnsupportedOperationException.class, () -> world.getEnemies().clear());
     }
@@ -81,5 +82,48 @@ public class GameWorldTest {
         GameMap map = room();
         Warrior hero = new Warrior(new Position(1, 1), 1);
         assertThrows(NullPointerException.class, () -> new GameWorld(null, hero, List.of(), new MovementService(map)));
+    }
+
+    @Test
+    void statusIsRunningWithLivingPlayerAndEnemies() {
+        GameMap map = room();
+        Warrior hero = new Warrior(new Position(1, 1), 1);
+        Enemy enemy = new Enemy(new Position(2, 1), 2, 30, 8, 12, new MeleeChaseStrategy());
+        GameWorld world = new GameWorld(map, hero, List.of(enemy), new  MovementService(map));
+        assertEquals(GameStatus.RUNNING, world.status());
+    }
+
+    @Test
+    void statusIsWonWhenAllEnemiesAreDead() {
+        GameMap map = room();
+        Warrior hero = new Warrior(new Position(1, 1), 1);
+        Enemy enemy = new Enemy(new Position(2, 1), 2, 8, 8, 12, new MeleeChaseStrategy());
+        GameWorld world = new GameWorld(map, hero, List.of(enemy), new  MovementService(map));
+        world.playerTurn(Direction.RIGHT);
+        assertEquals(GameStatus.WON, world.status());
+    }
+
+    @Test
+    void statusIsLostWhenPlayerDies() {
+        GameMap map = room();
+        Sorcerer hero = new Sorcerer(new Position(1, 1), 1);
+        Enemy boss = new Enemy(new Position(2, 1), 2, 80, 30, 50, new MeleeChaseStrategy());
+        GameWorld world = new GameWorld(map, hero, List.of(boss), new  MovementService(map));
+        world.playerTurn(Direction.RIGHT);
+        world.playerTurn(Direction.RIGHT);
+        assertEquals(GameStatus.LOST, world.status());
+    }
+
+    @Test
+    void deadPlayerCannotAct() {
+        GameMap map = room();
+        Sorcerer hero = new Sorcerer(new Position(1, 1), 1);
+        Enemy boss = new Enemy(new Position(2, 1), 2, 80, 30, 50, new MeleeChaseStrategy());
+        GameWorld world = new GameWorld(map, hero, List.of(boss), new  MovementService(map));
+        world.playerTurn(Direction.RIGHT);
+        world.playerTurn(Direction.RIGHT);
+        int bossHpAfterDeath = world.getEnemies().get(0).getHp();
+        world.playerTurn(Direction.RIGHT);
+        assertEquals(bossHpAfterDeath, world.getEnemies().get(0).getHp());
     }
 }

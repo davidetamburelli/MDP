@@ -2,7 +2,6 @@ package it.unicam.cs.mpgc.rpg125681.model.game;
 
 import it.unicam.cs.mpgc.rpg125681.model.entity.Enemy;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Player;
-import it.unicam.cs.mpgc.rpg125681.model.movement.MoveOutcome;
 import it.unicam.cs.mpgc.rpg125681.model.movement.MovementService;
 import it.unicam.cs.mpgc.rpg125681.model.world.Direction;
 import it.unicam.cs.mpgc.rpg125681.model.world.GameMap;
@@ -34,6 +33,9 @@ public class GameWorld {
     }
 
     public void playerTurn(Direction direction) {
+        if (player.isDead()) {
+            return;
+        }
         resolvePlayerAction(direction);
         removeDeadEnemiesAndAwardExp();
         advanceEnemies();
@@ -67,6 +69,20 @@ public class GameWorld {
         return enemies.stream()
                 .filter(enemy -> enemy.getPosition().equals(position))
                 .findFirst().orElse(null);
+    }
+
+    public GameStatus status() {
+        if (player.isDead()) {
+            return GameStatus.LOST;
+        }
+        if (enemies.isEmpty()) {
+            return GameStatus.WON;
+        }
+        return GameStatus.RUNNING;
+    }
+
+    public boolean isOver() {
+        return status() != GameStatus.RUNNING;
     }
 
     public GameMap getGameMap() { return this.map; }
