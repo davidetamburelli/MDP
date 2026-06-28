@@ -4,7 +4,9 @@ import it.unicam.cs.mpgc.rpg125681.model.entity.Enemy;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Player;
 import it.unicam.cs.mpgc.rpg125681.model.movement.MovementService;
 
-public class MeleeChaseStrategy implements BehaviorStrategy{
+import java.io.Serializable;
+
+public class MeleeChaseStrategy implements BehaviorStrategy, Serializable{
 
     @Override
     public void act(Enemy self, Player target, MovementService movement) {

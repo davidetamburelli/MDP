@@ -1,9 +1,10 @@
 package it.unicam.cs.mpgc.rpg125681.model.world;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
-public final class GameMap {
+public final class GameMap implements Serializable{
 
     private final TileType[][] tiles;
     private final int width;

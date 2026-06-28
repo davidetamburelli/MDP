@@ -4,7 +4,9 @@ import it.unicam.cs.mpgc.rpg125681.model.entity.Enemy;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Player;
 import it.unicam.cs.mpgc.rpg125681.model.movement.MovementService;
 
-public class RangedStrategy implements BehaviorStrategy {
+import java.io.Serializable;
+
+public class RangedStrategy implements BehaviorStrategy, Serializable{
     private final int attackRange;
 
     public RangedStrategy(int attackRange) {

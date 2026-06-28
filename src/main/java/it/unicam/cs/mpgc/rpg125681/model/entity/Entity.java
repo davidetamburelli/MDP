@@ -2,7 +2,9 @@ package it.unicam.cs.mpgc.rpg125681.model.entity;
 
 import it.unicam.cs.mpgc.rpg125681.model.world.Position;
 
-public abstract class Entity {
+import java.io.Serializable;
+
+public abstract class Entity implements Serializable{
     private Position position;
     private final int id;
 
