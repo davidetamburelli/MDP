@@ -1,6 +1,7 @@
 package it.unicam.cs.mpgc.rpg125681.model.game;
 
 import it.unicam.cs.mpgc.rpg125681.model.entity.Enemy;
+import it.unicam.cs.mpgc.rpg125681.model.entity.EnemyType;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Sorcerer;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Warrior;
 import it.unicam.cs.mpgc.rpg125681.model.entity.behavior.MeleeChaseStrategy;
@@ -25,6 +26,10 @@ public class GameWorldTest {
         ));
     }
 
+    private Enemy goblin(Position pos, int id, int hp) {
+        return new Enemy(pos, id, hp, 8, 12, new MeleeChaseStrategy(), EnemyType.GOBLIN);
+    }
+
     @Test
     void freeMoveUpdatesPlayerPosition() {
         GameMap map = room();
@@ -38,7 +43,7 @@ public class GameWorldTest {
     void bumpAttackDamagesEnemyAndPlayerStaysPut() {
         GameMap map = room();
         Warrior hero = new Warrior(new Position(1, 1), 1);
-        Enemy enemy = new Enemy(new Position(2, 1), 2, 30, 8, 12, new MeleeChaseStrategy());
+        Enemy enemy = goblin(new Position(2, 1), 2, 30);
         GameWorld world = new GameWorld(map, hero, List.of(enemy), new MovementService(map));
         world.playerTurn(Direction.RIGHT);
         assertEquals(21, world.getEnemies().get(0).getHp());
@@ -46,10 +51,10 @@ public class GameWorldTest {
     }
 
     @Test
-    void killingEnemyRemovesItAndAwardsExp () {
+    void killingEnemyRemovesItAndAwardsExp() {
         GameMap map = room();
         Warrior hero = new Warrior(new Position(1, 1), 1);
-        Enemy enemy = new Enemy(new Position(2, 1), 2, 8, 8, 12, new MeleeChaseStrategy());
+        Enemy enemy = goblin(new Position(2, 1), 2, 8);
         GameWorld world = new GameWorld(map, hero, List.of(enemy), new MovementService(map));
         world.playerTurn(Direction.RIGHT);
         assertTrue(world.getEnemies().isEmpty());
@@ -61,7 +66,7 @@ public class GameWorldTest {
     void distantEnemyAdvancesDuringTurn() {
         GameMap map = room();
         Warrior hero = new Warrior(new Position(1, 1), 1);
-        Enemy enemy = new Enemy(new Position(3, 1), 2, 30, 8, 12, new MeleeChaseStrategy());
+        Enemy enemy = goblin(new Position(3, 1), 2, 30);
         GameWorld world = new GameWorld(map, hero, List.of(enemy), new MovementService(map));
         world.playerTurn(Direction.DOWN);
         assertEquals(new Position(1, 2), hero.getPosition());
@@ -72,7 +77,7 @@ public class GameWorldTest {
     void getEnemiesIsUnmodifiable() {
         GameMap map = room();
         Warrior hero = new Warrior(new Position(1, 1), 1);
-        Enemy enemy = new Enemy(new Position(2, 1), 2, 30, 8, 12, new MeleeChaseStrategy());
+        Enemy enemy = goblin(new Position(2, 1), 2, 30);
         GameWorld world = new GameWorld(map, hero, List.of(enemy), new MovementService(map));
         assertThrows(UnsupportedOperationException.class, () -> world.getEnemies().clear());
     }
@@ -81,15 +86,16 @@ public class GameWorldTest {
     void nullMapInConstructorThrowsException() {
         GameMap map = room();
         Warrior hero = new Warrior(new Position(1, 1), 1);
-        assertThrows(NullPointerException.class, () -> new GameWorld(null, hero, List.of(), new MovementService(map)));
+        assertThrows(NullPointerException.class,
+                () -> new GameWorld(null, hero, List.of(), new MovementService(map)));
     }
 
     @Test
     void statusIsRunningWithLivingPlayerAndEnemies() {
         GameMap map = room();
         Warrior hero = new Warrior(new Position(1, 1), 1);
-        Enemy enemy = new Enemy(new Position(2, 1), 2, 30, 8, 12, new MeleeChaseStrategy());
-        GameWorld world = new GameWorld(map, hero, List.of(enemy), new  MovementService(map));
+        Enemy enemy = goblin(new Position(2, 1), 2, 30);
+        GameWorld world = new GameWorld(map, hero, List.of(enemy), new MovementService(map));
         assertEquals(GameStatus.RUNNING, world.status());
     }
 
@@ -97,8 +103,8 @@ public class GameWorldTest {
     void statusIsWonWhenAllEnemiesAreDead() {
         GameMap map = room();
         Warrior hero = new Warrior(new Position(1, 1), 1);
-        Enemy enemy = new Enemy(new Position(2, 1), 2, 8, 8, 12, new MeleeChaseStrategy());
-        GameWorld world = new GameWorld(map, hero, List.of(enemy), new  MovementService(map));
+        Enemy enemy = goblin(new Position(2, 1), 2, 8);
+        GameWorld world = new GameWorld(map, hero, List.of(enemy), new MovementService(map));
         world.playerTurn(Direction.RIGHT);
         assertEquals(GameStatus.WON, world.status());
     }
@@ -107,8 +113,8 @@ public class GameWorldTest {
     void statusIsLostWhenPlayerDies() {
         GameMap map = room();
         Sorcerer hero = new Sorcerer(new Position(1, 1), 1);
-        Enemy boss = new Enemy(new Position(2, 1), 2, 80, 30, 50, new MeleeChaseStrategy());
-        GameWorld world = new GameWorld(map, hero, List.of(boss), new  MovementService(map));
+        Enemy boss = new Enemy(new Position(2, 1), 2, 80, 30, 50, new MeleeChaseStrategy(), EnemyType.SKELETON);
+        GameWorld world = new GameWorld(map, hero, List.of(boss), new MovementService(map));
         world.playerTurn(Direction.RIGHT);
         world.playerTurn(Direction.RIGHT);
         assertEquals(GameStatus.LOST, world.status());
@@ -118,8 +124,8 @@ public class GameWorldTest {
     void deadPlayerCannotAct() {
         GameMap map = room();
         Sorcerer hero = new Sorcerer(new Position(1, 1), 1);
-        Enemy boss = new Enemy(new Position(2, 1), 2, 80, 30, 50, new MeleeChaseStrategy());
-        GameWorld world = new GameWorld(map, hero, List.of(boss), new  MovementService(map));
+        Enemy boss = new Enemy(new Position(2, 1), 2, 80, 30, 50, new MeleeChaseStrategy(), EnemyType.SKELETON);
+        GameWorld world = new GameWorld(map, hero, List.of(boss), new MovementService(map));
         world.playerTurn(Direction.RIGHT);
         world.playerTurn(Direction.RIGHT);
         int bossHpAfterDeath = world.getEnemies().get(0).getHp();

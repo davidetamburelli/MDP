@@ -26,38 +26,38 @@ public class EnemyBehaviorTest {
     @Test
     void meleeAttacksWhenAdjacent() {
         MovementService movement = openRoom();
-        Player hero = new Warrior(new Position(0, 0), 1);
-        Enemy enemy = new Enemy(new Position(1, 0), 2, 30, 8, 5, new MeleeChaseStrategy());
+        Player hero = new Warrior(new Position(1, 1), 1);
+        Enemy enemy = new Enemy(new Position(2, 1), 2, 30, 8, 5, new MeleeChaseStrategy(), EnemyType.GOBLIN);
         enemy.update(hero, movement);
         assertEquals(112, hero.getHp());
-        assertEquals(new Position(1, 0), enemy.getPosition());
+        assertEquals(new Position(2, 1), enemy.getPosition());
     }
 
     @Test
     void meleeMovesCloserWhenFar() {
         MovementService movement = openRoom();
-        Player hero = new Warrior(new Position(0, 0), 3);
-        Enemy enemy = new Enemy(new Position(4, 0), 4, 30, 8, 5, new MeleeChaseStrategy());
+        Player hero = new Warrior(new Position(1, 1), 3);
+        Enemy enemy = new Enemy(new Position(5, 1), 4, 30, 8, 5, new MeleeChaseStrategy(), EnemyType.GOBLIN);
         enemy.update(hero, movement);
         assertEquals(120, hero.getHp());
-        assertEquals(new Position(4, 0), enemy.getPosition());
+        assertEquals(new Position(4, 1), enemy.getPosition());
     }
 
     @Test
     void rangedAttacksWithinRange() {
         MovementService movement = openRoom();
-        Player hero = new Warrior(new Position(0, 0), 5);
-        Enemy enemy = new Enemy(new Position(3, 0), 6, 30, 6, 5, new RangedStrategy(3));
+        Player hero = new Warrior(new Position(1, 1), 5);
+        Enemy enemy = new Enemy(new Position(4, 1), 6, 30, 6, 5, new RangedStrategy(3), EnemyType.ARCHER);
         enemy.update(hero, movement);
         assertEquals(114, hero.getHp());
-        assertEquals(new Position(3, 0), enemy.getPosition());
+        assertEquals(new Position(4, 1), enemy.getPosition());
     }
 
     @Test
     void rangedMovesCloserWhenOutOfRange() {
         MovementService movement = openRoom();
         Player hero = new Warrior(new Position(1, 1), 7);
-        Enemy enemy = new Enemy(new Position(6, 1), 8, 30, 6, 5, new RangedStrategy(3));
+        Enemy enemy = new Enemy(new Position(6, 1), 8, 30, 6, 5, new RangedStrategy(3), EnemyType.ARCHER);
         enemy.update(hero, movement);
         assertEquals(120, hero.getHp());
         assertEquals(new Position(5, 1), enemy.getPosition());
@@ -71,7 +71,7 @@ public class EnemyBehaviorTest {
                 "#####"
         )));
         Player hero = new Warrior(new Position(1, 1), 9);
-        Enemy enemy = new Enemy(new Position(3, 1), 10, 30, 8, 5, new MeleeChaseStrategy());
+        Enemy enemy = new Enemy(new Position(3, 1), 10, 30, 8, 5, new MeleeChaseStrategy(), EnemyType.GOBLIN);
         enemy.update(hero, movement);
         assertEquals(120, hero.getHp());
         assertEquals(new Position(3, 1), enemy.getPosition());
@@ -79,7 +79,7 @@ public class EnemyBehaviorTest {
 
     @Test
     void stepTowardMovesVerticallyWhenTargetAbove() {
-        Direction dir = BehaviorStrategy.stepToward(new Position(0 ,5), new Position(0, 0));
+        Direction dir = BehaviorStrategy.stepToward(new Position(0, 5), new Position(0, 0));
         assertEquals(Direction.UP, dir);
     }
 
@@ -92,13 +92,12 @@ public class EnemyBehaviorTest {
     @Test
     void negativeAttackPowerThrowsException() {
         assertThrows(IllegalArgumentException.class, () -> new Enemy(
-                new Position(0, 0), 1, 30, -1, 5, new MeleeChaseStrategy()
-        ));
+                new Position(1, 1), 1, 30, -1, 5, new MeleeChaseStrategy(), EnemyType.GOBLIN));
     }
 
     @Test
     void nullBehaviorThrowsException() {
         assertThrows(NullPointerException.class, () -> new Enemy(
-                new Position(0, 0), 1, 30, 8, 5, null));
+                new Position(1, 1), 1, 30, 8, 5, null, EnemyType.GOBLIN));
     }
 }

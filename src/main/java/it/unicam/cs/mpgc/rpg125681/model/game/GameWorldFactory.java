@@ -1,11 +1,13 @@
 package it.unicam.cs.mpgc.rpg125681.model.game;
 
 import it.unicam.cs.mpgc.rpg125681.model.entity.Enemy;
+import it.unicam.cs.mpgc.rpg125681.model.entity.EnemyType;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Player;
 import it.unicam.cs.mpgc.rpg125681.model.entity.PlayerClass;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Rogue;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Sorcerer;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Warrior;
+import it.unicam.cs.mpgc.rpg125681.model.entity.behavior.BehaviorKind;
 import it.unicam.cs.mpgc.rpg125681.model.entity.behavior.BehaviorStrategy;
 import it.unicam.cs.mpgc.rpg125681.model.entity.behavior.MeleeChaseStrategy;
 import it.unicam.cs.mpgc.rpg125681.model.entity.behavior.RangedStrategy;
@@ -59,22 +61,42 @@ public class GameWorldFactory {
     }
 
     private List<Enemy> createEnemies(int depth, List<Position> rooms) {
+        List<EnemyType> pool = speciesForDepth(depth);
         List<Enemy> enemies = new ArrayList<>();
         int count = depth + 2;
         for (int i = 0; i < count; i++) {
+            EnemyType type = pool.get(i % pool.size());
             Position spawn = rooms.get(1 + i);
-            int hp = 20 + depth * 5;
-            int attack = 6 + depth;
-            int exp = 10 + depth * 2;
-            BehaviorStrategy behavior = (i % 3 == 0) ? new RangedStrategy(3) : new MeleeChaseStrategy();
-            enemies.add(new Enemy(spawn, nextId(), hp, attack, exp, behavior));
+            enemies.add(spawn(type, depth, spawn));
         }
         return enemies;
     }
 
-    private Player createPlayer(PlayerClass type, Position start) {
+    private List<EnemyType> speciesForDepth(int depth) {
+        List<EnemyType> pool = new ArrayList<>();
+        pool.add(EnemyType.GOBLIN);
+        pool.add(EnemyType.SKELETON);
+        if (depth >= 2) pool.add(EnemyType.ARCHER);
+        if (depth >= 3) pool.add(EnemyType.MAGE);
+        return pool;
+    }
+
+    private Enemy spawn(EnemyType type, int depth, Position position) {
+        int hp = type.getBaseHp() + depth * 5;
+        int attack = type.getBaseAttack() + depth;
+        int exp = type.getBaseExp() + depth * 2;
+        return new Enemy(position, nextId(), hp, attack, exp, behaviorFor(type), type);
+    }
+
+    private BehaviorStrategy behaviorFor(EnemyType type) {
+        return type.getBehaviorKind() == BehaviorKind.RANGED
+                ? new RangedStrategy(type.getRange())
+                : new MeleeChaseStrategy();
+    }
+
+    private Player createPlayer(PlayerClass classType, Position start) {
         int id = nextId();
-        return switch (type) {
+        return switch (classType) {
             case WARRIOR  -> new Warrior(start, id);
             case ROGUE    -> new Rogue(start, id);
             case SORCERER -> new Sorcerer(start, id);
