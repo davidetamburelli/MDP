@@ -14,10 +14,13 @@ import java.util.Objects;
 
 public class GameController {
 
+    private static final int FINAL_DEPTH = 5;
+
     private final GameWorldFactory factory;
     private final GameRepository repository;
     private final List<GameObserver> observers = new ArrayList<>();
     private GameWorld world;
+    private int depth;
 
     public GameController(GameWorldFactory factory, GameRepository repository) {
         this.factory = Objects.requireNonNull(factory, "factory");
@@ -29,7 +32,8 @@ public class GameController {
     }
 
     public void newGame(PlayerClass playerClass) {
-        this.world = factory.createDefaultGame(playerClass);
+        this.depth = 1;
+        this.world = factory.createFirstLevel(playerClass);
         notifyObservers();
     }
 
@@ -38,7 +42,15 @@ public class GameController {
             return;
         }
         world.playerTurn(direction);
+        if (world.status() == GameStatus.WON && depth < FINAL_DEPTH) {
+            descend();
+        }
         notifyObservers();
+    }
+
+    private void descend() {
+        this.depth++;
+        this.world = factory.createNextLevel(depth, world.getPlayer());
     }
 
     public void save(String slot) {
@@ -55,9 +67,8 @@ public class GameController {
         return repository.listSlots();
     }
 
-    public GameWorld getWorld() {
-        return this.world;
-    }
+    public GameWorld getWorld() { return this.world; }
+    public int getDepth() { return this.depth; }
 
     public GameStatus status() {
         requireActiveGame();

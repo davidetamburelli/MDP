@@ -4,16 +4,19 @@ import it.unicam.cs.mpgc.rpg125681.model.entity.PlayerClass;
 import it.unicam.cs.mpgc.rpg125681.model.game.GameStatus;
 import it.unicam.cs.mpgc.rpg125681.model.game.GameWorldFactory;
 import it.unicam.cs.mpgc.rpg125681.model.world.Direction;
+import it.unicam.cs.mpgc.rpg125681.model.world.MapGenerator;
 import it.unicam.cs.mpgc.rpg125681.model.world.Position;
 import it.unicam.cs.mpgc.rpg125681.persistence.FileGameRepository;
 import it.unicam.cs.mpgc.rpg125681.persistence.GameRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.file.Path;
+import java.util.Random;
 
-public class GameControllerTest {
+import static org.junit.jupiter.api.Assertions.*;
+
+class GameControllerTest {
 
     @TempDir
     Path tempDir;
@@ -28,8 +31,9 @@ public class GameControllerTest {
     }
 
     private GameController newController() {
+        GameWorldFactory factory = new GameWorldFactory(new MapGenerator(new Random(7)));
         GameRepository repository = new FileGameRepository(tempDir);
-        return new GameController(new GameWorldFactory(), repository);
+        return new GameController(factory, repository);
     }
 
     @Test
@@ -54,7 +58,6 @@ public class GameControllerTest {
 
         controller.handleMove(Direction.RIGHT);
 
-        assertEquals(new Position(2, 1), controller.getWorld().getPlayer().getPosition());
         assertEquals(2, observer.count());
     }
 
@@ -71,20 +74,22 @@ public class GameControllerTest {
     }
 
     @Test
-    void statusWithoutActiveGameThrowsException() {
+    void statusWithoutActiveGameThrows() {
         GameController controller = newController();
         assertThrows(IllegalStateException.class, controller::status);
     }
 
+    @Test
     void saveAndLoadThroughControllerPreservesState() {
         GameController controller = newController();
         controller.newGame(PlayerClass.WARRIOR);
         controller.handleMove(Direction.RIGHT);
+        Position playerPos = controller.getWorld().getPlayer().getPosition();
         controller.save("slot1");
 
         GameController other = newController();
         other.load("slot1");
 
-        assertEquals(new Position(2, 1), other.getWorld().getPlayer().getPosition());
+        assertEquals(playerPos, other.getWorld().getPlayer().getPosition());
     }
 }

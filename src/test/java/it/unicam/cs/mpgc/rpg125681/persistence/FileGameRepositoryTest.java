@@ -3,39 +3,47 @@ package it.unicam.cs.mpgc.rpg125681.persistence;
 import it.unicam.cs.mpgc.rpg125681.model.entity.PlayerClass;
 import it.unicam.cs.mpgc.rpg125681.model.game.GameWorld;
 import it.unicam.cs.mpgc.rpg125681.model.game.GameWorldFactory;
+import it.unicam.cs.mpgc.rpg125681.model.world.MapGenerator;
 import it.unicam.cs.mpgc.rpg125681.model.world.Position;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Random;
 
-public class FileGameRepositoryTest {
+import static org.junit.jupiter.api.Assertions.*;
+
+class FileGameRepositoryTest {
 
     @TempDir
     Path tempDir;
 
     private GameWorld newGame() {
-        return new GameWorldFactory().createDefaultGame(PlayerClass.WARRIOR);
+        GameWorldFactory factory = new GameWorldFactory(new MapGenerator(new Random(7)));
+        return factory.createFirstLevel(PlayerClass.WARRIOR);
     }
 
     @Test
     void saveAndLoadPreservesState() {
         GameRepository repo = new FileGameRepository(tempDir);
         GameWorld original = newGame();
-        repo.save("slot1", SaveGame.from(original));
+        Position playerPos = original.getPlayer().getPosition();
+        int playerHp = original.getPlayer().getHp();
+        int enemyCount = original.getEnemies().size();
 
+        repo.save("slot1", SaveGame.from(original));
         GameWorld loaded = repo.load("slot1").toGameWorld();
-        assertEquals(new Position(1, 1), loaded.getPlayer().getPosition());
-        assertEquals(120, loaded.getPlayer().getHp());
-        assertEquals(3, loaded.getEnemies().size());
+
+        assertEquals(playerPos, loaded.getPlayer().getPosition());
+        assertEquals(playerHp, loaded.getPlayer().getHp());
+        assertEquals(enemyCount, loaded.getEnemies().size());
     }
 
     @Test
-    void loadMissingSlotThrowsException() {
+    void loadMissingSlotThrows() {
         GameRepository repo = new FileGameRepository(tempDir);
-        assertThrows(PersistenceException.class, () -> repo.load("doesNotExist"));
+        assertThrows(PersistenceException.class, () -> repo.load("nonEsiste"));
     }
 
     @Test
