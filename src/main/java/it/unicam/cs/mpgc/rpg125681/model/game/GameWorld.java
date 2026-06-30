@@ -3,15 +3,14 @@ package it.unicam.cs.mpgc.rpg125681.model.game;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Enemy;
 import it.unicam.cs.mpgc.rpg125681.model.entity.EnemyType;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Player;
+import it.unicam.cs.mpgc.rpg125681.model.item.Item;
+import it.unicam.cs.mpgc.rpg125681.model.item.ItemType;
 import it.unicam.cs.mpgc.rpg125681.model.movement.MovementService;
 import it.unicam.cs.mpgc.rpg125681.model.world.Direction;
 import it.unicam.cs.mpgc.rpg125681.model.world.GameMap;
 import it.unicam.cs.mpgc.rpg125681.model.world.Position;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class GameWorld {
 
@@ -20,17 +19,25 @@ public class GameWorld {
     private final List<Enemy> enemies;
     private final MovementService movementService;
     private final KillLog killLog;
+    private final Map<Position, List<Item>> droppedItems = new HashMap<>();
+    private final Random random;
 
     public GameWorld(GameMap map, Player player, List<Enemy> enemies, MovementService movementService) {
-        this(map, player, enemies, movementService, new KillLog());
+        this(map, player, enemies, movementService, new KillLog(), new Random());
     }
 
     public GameWorld(GameMap map, Player player, List<Enemy> enemies, MovementService movementService, KillLog killLog) {
+        this(map, player, enemies, movementService, killLog, new Random());
+    }
+
+    public GameWorld(GameMap map, Player player, List<Enemy> enemies, MovementService movementService,
+                     KillLog killLog, Random random) {
         this.map = Objects.requireNonNull(map, "map");
         this.player = Objects.requireNonNull(player, "player");
         this.enemies = new ArrayList<>(Objects.requireNonNull(enemies, "enemies"));
         this.movementService = Objects.requireNonNull(movementService, "movementService");
         this.killLog = Objects.requireNonNull(killLog, "killLog");
+        this.random = Objects.requireNonNull(random, "random");
     }
 
     public void playerTurn(Direction direction) {
@@ -95,10 +102,34 @@ public class GameWorld {
         EnemyType type = enemy.getType();
         killLog.record(type);
         player.absorb(type.getAbsorbStat(), type.getAbsorbAmount());
+        rollDrop(enemy);
+    }
+
+    public void dropItem(Position position, Item item) {
+        droppedItems.computeIfAbsent(position, k -> new ArrayList<>()).add(item);
+    }
+
+    public void removeItemsAt(Position position) {
+        droppedItems.remove(position);
+    }
+
+    private void rollDrop(Enemy enemy) {
+        if (random.nextDouble() < enemy.getType().getDropChance()) {
+            ItemType dropType = ItemType.getRandomDrop(random);
+            if (dropType != null) {
+                dropItem(enemy.getPosition(), new Item(dropType));
+            }
+        }
     }
 
     public GameMap getGameMap() { return this.map; }
     public Player getPlayer() { return this.player; }
     public List<Enemy> getEnemies() { return Collections.unmodifiableList(this.enemies); }
     public KillLog getKillLog() { return this.killLog; }
+    public List<Item> getItemsAt(Position position) {
+        return droppedItems.getOrDefault(position, Collections.emptyList());
+    }
+    public Map<Position, List<Item>> getDroppedItems() {
+        return Collections.unmodifiableMap(this.droppedItems);
+    }
 }
