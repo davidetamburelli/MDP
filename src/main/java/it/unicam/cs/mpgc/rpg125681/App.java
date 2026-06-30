@@ -5,6 +5,8 @@ import it.unicam.cs.mpgc.rpg125681.model.entity.PlayerClass;
 import it.unicam.cs.mpgc.rpg125681.model.game.GameWorldFactory;
 import it.unicam.cs.mpgc.rpg125681.persistence.FileGameRepository;
 import it.unicam.cs.mpgc.rpg125681.persistence.GameRepository;
+import it.unicam.cs.mpgc.rpg125681.persistence.JsonLeaderboardRepository;
+import it.unicam.cs.mpgc.rpg125681.persistence.LeaderboardRepository;
 import it.unicam.cs.mpgc.rpg125681.view.GameView;
 
 import javafx.application.Application;
@@ -18,7 +20,8 @@ public class App extends Application{
     public void start(Stage stage) {
         GameWorldFactory factory = new GameWorldFactory();
         GameRepository repository = new FileGameRepository(Path.of("saves"));
-        GameController controller = new GameController(factory, repository);
+        LeaderboardRepository leaderboard = new JsonLeaderboardRepository(Path.of("leaderboard.json"));
+        GameController controller = new GameController(factory, repository, leaderboard);
 
         controller.newGame(PlayerClass.WARRIOR);
         GameView view = new GameView(controller);

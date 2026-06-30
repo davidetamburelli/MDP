@@ -8,13 +8,14 @@ import it.unicam.cs.mpgc.rpg125681.model.world.MapGenerator;
 import it.unicam.cs.mpgc.rpg125681.model.world.Position;
 import it.unicam.cs.mpgc.rpg125681.persistence.FileGameRepository;
 import it.unicam.cs.mpgc.rpg125681.persistence.GameRepository;
+import it.unicam.cs.mpgc.rpg125681.persistence.JsonLeaderboardRepository;
+import it.unicam.cs.mpgc.rpg125681.persistence.LeaderboardRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.file.Path;
 import java.util.Random;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class GameControllerTest {
 
@@ -33,7 +34,8 @@ class GameControllerTest {
     private GameController newController() {
         GameWorldFactory factory = new GameWorldFactory(new MapGenerator(new Random(7)));
         GameRepository repository = new FileGameRepository(tempDir);
-        return new GameController(factory, repository);
+        LeaderboardRepository leaderboard = new JsonLeaderboardRepository(tempDir.resolve("lb.json"));
+        return new GameController(factory, repository, leaderboard);
     }
 
     @Test

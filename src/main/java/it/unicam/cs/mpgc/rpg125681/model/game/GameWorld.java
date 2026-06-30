@@ -1,6 +1,7 @@
 package it.unicam.cs.mpgc.rpg125681.model.game;
 
 import it.unicam.cs.mpgc.rpg125681.model.entity.Enemy;
+import it.unicam.cs.mpgc.rpg125681.model.entity.EnemyType;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Player;
 import it.unicam.cs.mpgc.rpg125681.model.movement.MovementService;
 import it.unicam.cs.mpgc.rpg125681.model.world.Direction;
@@ -76,7 +77,7 @@ public class GameWorld {
 
     private void removeDeadEnemiesAndAwardExp() {
         List<Enemy> dead = enemies.stream().filter(Enemy::isDead).toList();
-        dead.forEach(enemy -> killLog.record(enemy.getType()));
+        dead.forEach(this::registerKill);
         int gainedExp = dead.stream().mapToInt(Enemy::getExpReward).sum();
         enemies.removeAll(dead);
         if (gainedExp > 0) {
@@ -88,6 +89,12 @@ public class GameWorld {
         return enemies.stream()
                 .filter(enemy -> enemy.getPosition().equals(position))
                 .findFirst().orElse(null);
+    }
+
+    private void registerKill(Enemy enemy) {
+        EnemyType type = enemy.getType();
+        killLog.record(type);
+        player.absorb(type.getAbsorbStat(), type.getAbsorbAmount());
     }
 
     public GameMap getGameMap() { return this.map; }
