@@ -18,7 +18,9 @@ public abstract class Player extends LivingEntity implements Attacker {
     private final int attackPower;
     private int absorbedAttack;
     private int absorbedMaxHp;
+    private int gold;
     private final Inventory inventory;
+    private int maxDepthReached;
 
     protected Player(Position position, int id, int maxHp, int attackPower) {
         super(position, id, maxHp);
@@ -29,10 +31,14 @@ public abstract class Player extends LivingEntity implements Attacker {
         this.attackPower = attackPower;
         this.absorbedAttack = 0;
         this.absorbedMaxHp = 0;
+        this.gold = 0;
         this.inventory = new Inventory();
+        this.maxDepthReached = 0;
     }
 
     protected abstract int hpPerLevel();
+
+    public abstract PlayerClass getPlayerClass();
 
     private void levelUp() {
         this.level++;
@@ -48,6 +54,17 @@ public abstract class Player extends LivingEntity implements Attacker {
             this.exp -= this.maxExp;
             levelUp();
         }
+    }
+
+    public void addGold(int amount) {
+        if (amount < 0) throw new IllegalArgumentException("Gold to add must be non-negative.");
+        this.gold += amount;
+    }
+
+    public void spendGold(int amount) {
+        if (amount < 0) throw new IllegalArgumentException("Gold to spend must be non-negative.");
+        if (amount > this.gold) throw new IllegalArgumentException("Not enough gold.");
+        this.gold -= amount;
     }
 
     public void absorb(AbsorbStat stat, int amount) {
@@ -80,7 +97,17 @@ public abstract class Player extends LivingEntity implements Attacker {
 
     @Override
     public void takeDamage(int damage) {
+        if (damage <= 0) {
+            super.takeDamage(damage);
+            return;
+        }
         super.takeDamage(Math.max(1, damage - getDefense()));
+    }
+
+    public void recordDepthReached(int depth) {
+        if (depth > this.maxDepthReached) {
+            this.maxDepthReached = depth;
+        }
     }
 
     public int getDefense() {
@@ -100,5 +127,7 @@ public abstract class Player extends LivingEntity implements Attacker {
     public int getMaxExp() { return this.maxExp; }
     public int getAbsorbedAttack() { return this.absorbedAttack; }
     public int getAbsorbedMaxHp() { return this.absorbedMaxHp; }
+    public int getGold() { return this.gold; }
     public Inventory getInventory() { return this.inventory; }
+    public int getMaxDepthReached() { return this.maxDepthReached; }
 }

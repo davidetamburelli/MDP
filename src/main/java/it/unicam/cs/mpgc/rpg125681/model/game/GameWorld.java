@@ -19,11 +19,11 @@ public class GameWorld {
     private final List<Enemy> enemies;
     private final MovementService movementService;
     private final KillLog killLog;
-    private final Map<Position, List<Item>> droppedItems = new HashMap<>();
     private final Random random;
+    private final Map<Position, List<Item>> droppedItems = new HashMap<>();
 
     public GameWorld(GameMap map, Player player, List<Enemy> enemies, MovementService movementService) {
-        this(map, player, enemies, movementService, new KillLog(), new Random());
+        this(map, player, enemies, movementService, new KillLog());
     }
 
     public GameWorld(GameMap map, Player player, List<Enemy> enemies, MovementService movementService, KillLog killLog) {
@@ -32,12 +32,19 @@ public class GameWorld {
 
     public GameWorld(GameMap map, Player player, List<Enemy> enemies, MovementService movementService,
                      KillLog killLog, Random random) {
+        this(map, player, enemies, movementService, killLog, random, new HashMap<>());
+    }
+
+    public GameWorld(GameMap map, Player player, List<Enemy> enemies, MovementService movementService,
+                     KillLog killLog, Random random, Map<Position, List<Item>> droppedItems) {
         this.map = Objects.requireNonNull(map, "map");
         this.player = Objects.requireNonNull(player, "player");
         this.enemies = new ArrayList<>(Objects.requireNonNull(enemies, "enemies"));
         this.movementService = Objects.requireNonNull(movementService, "movementService");
         this.killLog = Objects.requireNonNull(killLog, "killLog");
         this.random = Objects.requireNonNull(random, "random");
+        Objects.requireNonNull(droppedItems, "droppedItems")
+                .forEach((position, items) -> this.droppedItems.put(position, new ArrayList<>(items)));
     }
 
     public void playerTurn(Direction direction) {
@@ -92,25 +99,12 @@ public class GameWorld {
         }
     }
 
-    private Enemy enemyAt(Position position) {
-        return enemies.stream()
-                .filter(enemy -> enemy.getPosition().equals(position))
-                .findFirst().orElse(null);
-    }
-
     private void registerKill(Enemy enemy) {
         EnemyType type = enemy.getType();
         killLog.record(type);
         player.absorb(type.getAbsorbStat(), type.getAbsorbAmount());
+        player.addGold(type.getBaseGold());
         rollDrop(enemy);
-    }
-
-    public void dropItem(Position position, Item item) {
-        droppedItems.computeIfAbsent(position, k -> new ArrayList<>()).add(item);
-    }
-
-    public void removeItemsAt(Position position) {
-        droppedItems.remove(position);
     }
 
     private void rollDrop(Enemy enemy) {
@@ -122,13 +116,29 @@ public class GameWorld {
         }
     }
 
+    private Enemy enemyAt(Position position) {
+        return enemies.stream()
+                .filter(enemy -> enemy.getPosition().equals(position))
+                .findFirst().orElse(null);
+    }
+
+    public void dropItem(Position position, Item item) {
+        droppedItems.computeIfAbsent(position, k -> new ArrayList<>()).add(item);
+    }
+
+    public void removeItemsAt(Position position) {
+        droppedItems.remove(position);
+    }
+
     public GameMap getGameMap() { return this.map; }
     public Player getPlayer() { return this.player; }
     public List<Enemy> getEnemies() { return Collections.unmodifiableList(this.enemies); }
     public KillLog getKillLog() { return this.killLog; }
+
     public List<Item> getItemsAt(Position position) {
         return droppedItems.getOrDefault(position, Collections.emptyList());
     }
+
     public Map<Position, List<Item>> getDroppedItems() {
         return Collections.unmodifiableMap(this.droppedItems);
     }

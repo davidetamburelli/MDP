@@ -132,4 +132,14 @@ public class GameWorldTest {
         world.playerTurn(Direction.RIGHT);
         assertEquals(bossHpAfterDeath, world.getEnemies().get(0).getHp());
     }
+
+    @Test
+    void killingEnemyAwardsGold() {
+        GameMap map = room();
+        Warrior hero = new Warrior(new Position(1, 1), 1);
+        Enemy enemy = goblin(new Position(2, 1), 2, 8);
+        GameWorld world = new GameWorld(map, hero, List.of(enemy), new MovementService(map));
+        world.playerTurn(Direction.RIGHT);
+        assertEquals(5, hero.getGold());
+    }
 }

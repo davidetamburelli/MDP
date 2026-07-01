@@ -14,6 +14,9 @@ public class Sorcerer extends Player{
     }
 
     @Override
+    public PlayerClass getPlayerClass() { return PlayerClass.SORCERER; }
+
+    @Override
     protected int hpPerLevel() {
         return HP_PER_LEVEL;
     }

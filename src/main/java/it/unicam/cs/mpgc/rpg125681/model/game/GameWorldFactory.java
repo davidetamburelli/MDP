@@ -103,6 +103,10 @@ public class GameWorldFactory {
         };
     }
 
+    public Player createPlayer(PlayerClass playerClass) {
+        return createPlayer(playerClass, new Position(0, 0));
+    }
+
     private int nextId() {
         return nextId++;
     }

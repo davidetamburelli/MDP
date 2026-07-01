@@ -2,6 +2,7 @@ package it.unicam.cs.mpgc.rpg125681.model.item;
 
 import it.unicam.cs.mpgc.rpg125681.model.entity.AbsorbStat;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Player;
+import it.unicam.cs.mpgc.rpg125681.model.entity.PlayerClass;
 import it.unicam.cs.mpgc.rpg125681.model.world.Position;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -12,6 +13,10 @@ class PlayerEquipmentTest {
         public DummyPlayer(Position position, int id, int maxHp, int baseAttackPower) {
             super(position, id, maxHp, baseAttackPower);
         }
+
+        @Override
+        public PlayerClass getPlayerClass() { return PlayerClass.WARRIOR; }
+
         @Override
         protected int hpPerLevel() { return 10; }
     }

@@ -13,6 +13,9 @@ public class Warrior extends Player{
     }
 
     @Override
+    public PlayerClass getPlayerClass() { return PlayerClass.WARRIOR; }
+
+    @Override
     protected int hpPerLevel() {
         return HP_PER_LEVEL;
     }

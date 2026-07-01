@@ -68,4 +68,17 @@ class FileGameRepositoryTest {
         GameRepository repo = new FileGameRepository(tempDir);
         assertTrue(repo.listSlots().isEmpty());
     }
+
+    @Test
+    void droppedItemsSurviveSaveLoad() {
+        GameRepository repo = new FileGameRepository(tempDir);
+        GameWorld original = newGame();
+        original.dropItem(new it.unicam.cs.mpgc.rpg125681.model.world.Position(1, 1),
+                new it.unicam.cs.mpgc.rpg125681.model.item.Item(it.unicam.cs.mpgc.rpg125681.model.item.ItemType.POTION_MINOR));
+
+        repo.save("slot1", SaveGame.from(original));
+        GameWorld loaded = repo.load("slot1").toGameWorld();
+
+        assertEquals(1, loaded.getItemsAt(new it.unicam.cs.mpgc.rpg125681.model.world.Position(1, 1)).size());
+    }
 }

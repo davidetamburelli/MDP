@@ -13,6 +13,9 @@ public class Rogue extends Player{
     }
 
     @Override
+    public PlayerClass getPlayerClass() { return PlayerClass.ROGUE; }
+
+    @Override
     protected int hpPerLevel() {
         return HP_PER_LEVEL;
     }
