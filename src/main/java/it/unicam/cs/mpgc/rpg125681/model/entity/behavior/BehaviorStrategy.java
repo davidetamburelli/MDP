@@ -22,4 +22,13 @@ public interface BehaviorStrategy {
         }
         return dyGap > 0 ? Direction.DOWN : Direction.UP;
     }
+
+    static Direction stepAway(Position from, Position to) {
+        int dxGap = to.getX() - from.getX();
+        int dyGap = to.getY() - from.getY();
+        if (Math.abs(dxGap) > Math.abs(dyGap)) {
+            return dxGap > 0 ? Direction.LEFT : Direction.RIGHT;
+        }
+        return dyGap > 0 ? Direction.UP : Direction.DOWN;
+    }
 }

@@ -5,7 +5,6 @@ import it.unicam.cs.mpgc.rpg125681.model.entity.Player;
 import it.unicam.cs.mpgc.rpg125681.model.game.GameWorld;
 import it.unicam.cs.mpgc.rpg125681.model.game.KillLog;
 import it.unicam.cs.mpgc.rpg125681.model.item.Item;
-import it.unicam.cs.mpgc.rpg125681.model.movement.MovementService;
 import it.unicam.cs.mpgc.rpg125681.model.world.GameMap;
 import it.unicam.cs.mpgc.rpg125681.model.world.Position;
 
@@ -14,7 +13,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 public record SaveGame(GameMap map, Player player, List<Enemy> enemies, KillLog killLog,
                        Map<Position, List<Item>> droppedItems) implements Serializable {
@@ -31,7 +29,9 @@ public record SaveGame(GameMap map, Player player, List<Enemy> enemies, KillLog 
     }
 
     public GameWorld toGameWorld() {
-        return new GameWorld(map, player, enemies, new MovementService(map), killLog,
-                new Random(), droppedItems);
+        return new GameWorld.Builder(map, player, enemies)
+                .killLog(killLog)
+                .droppedItems(droppedItems)
+                .build();
     }
 }

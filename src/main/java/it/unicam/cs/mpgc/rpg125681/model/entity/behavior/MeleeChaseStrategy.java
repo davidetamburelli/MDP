@@ -1,19 +1,11 @@
 package it.unicam.cs.mpgc.rpg125681.model.entity.behavior;
 
-import it.unicam.cs.mpgc.rpg125681.model.entity.Enemy;
-import it.unicam.cs.mpgc.rpg125681.model.entity.Player;
-import it.unicam.cs.mpgc.rpg125681.model.movement.MovementService;
+public class MeleeChaseStrategy extends ApproachAndAttackStrategy {
 
-import java.io.Serializable;
-
-public class MeleeChaseStrategy implements BehaviorStrategy, Serializable{
+    private static final long serialVersionUID = 1L;
 
     @Override
-    public void act(Enemy self, Player target, MovementService movement) {
-        if (BehaviorStrategy.distance(self.getPosition(), target.getPosition()) <= 1) {
-            self.attack(target);
-        } else {
-            movement.move(self, BehaviorStrategy.stepToward(self.getPosition(), target.getPosition()));
-        }
+    protected int attackRange() {
+        return 1;
     }
 }

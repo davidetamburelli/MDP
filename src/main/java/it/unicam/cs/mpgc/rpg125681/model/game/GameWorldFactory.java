@@ -7,11 +7,7 @@ import it.unicam.cs.mpgc.rpg125681.model.entity.PlayerClass;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Rogue;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Sorcerer;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Warrior;
-import it.unicam.cs.mpgc.rpg125681.model.entity.behavior.BehaviorKind;
-import it.unicam.cs.mpgc.rpg125681.model.entity.behavior.BehaviorStrategy;
-import it.unicam.cs.mpgc.rpg125681.model.entity.behavior.MeleeChaseStrategy;
-import it.unicam.cs.mpgc.rpg125681.model.entity.behavior.RangedStrategy;
-import it.unicam.cs.mpgc.rpg125681.model.movement.MovementService;
+import it.unicam.cs.mpgc.rpg125681.model.entity.behavior.*;
 import it.unicam.cs.mpgc.rpg125681.model.world.GameMap;
 import it.unicam.cs.mpgc.rpg125681.model.world.GeneratedLevel;
 import it.unicam.cs.mpgc.rpg125681.model.world.MapGenerator;
@@ -34,12 +30,6 @@ public class GameWorldFactory {
         this.generator = generator;
     }
 
-    public GameWorld createFirstLevel(PlayerClass playerClass) {
-        GeneratedLevel level = generateFor(1);
-        Player player = createPlayer(playerClass, level.rooms().get(0));
-        return assemble(1, level, player);
-    }
-
     public GameWorld createNextLevel(int depth, Player existingPlayer) {
         GeneratedLevel level = generateFor(depth);
         existingPlayer.moveTo(level.rooms().get(0));
@@ -55,9 +45,8 @@ public class GameWorldFactory {
 
     private GameWorld assemble(int depth, GeneratedLevel level, Player player) {
         GameMap map = level.map();
-        MovementService movementService = new MovementService(map);
         List<Enemy> enemies = createEnemies(depth, level.rooms());
-        return new GameWorld(map, player, enemies, movementService);
+        return new GameWorld(map, player, enemies);
     }
 
     private List<Enemy> createEnemies(int depth, List<Position> rooms) {
@@ -78,6 +67,7 @@ public class GameWorldFactory {
         pool.add(EnemyType.SKELETON);
         if (depth >= 2) pool.add(EnemyType.ARCHER);
         if (depth >= 3) pool.add(EnemyType.MAGE);
+        if (depth >= 4) pool.add(EnemyType.GARGOYLE);
         return pool;
     }
 
@@ -89,9 +79,12 @@ public class GameWorldFactory {
     }
 
     private BehaviorStrategy behaviorFor(EnemyType type) {
-        return type.getBehaviorKind() == BehaviorKind.RANGED
-                ? new RangedStrategy(type.getRange())
-                : new MeleeChaseStrategy();
+        return switch (type.getBehaviorKind()) {
+            case MELEE -> new MeleeChaseStrategy();
+            case RANGED -> new RangedStrategy(type.getRange());
+            case KITER -> new KiterStrategy(type.getRange());
+            case SENTRY -> new SentryStrategy(type.getRange());
+        };
     }
 
     private Player createPlayer(PlayerClass classType, Position start) {

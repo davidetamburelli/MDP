@@ -6,7 +6,6 @@ import it.unicam.cs.mpgc.rpg125681.model.entity.Warrior;
 import it.unicam.cs.mpgc.rpg125681.model.entity.behavior.MeleeChaseStrategy;
 import it.unicam.cs.mpgc.rpg125681.model.item.Item;
 import it.unicam.cs.mpgc.rpg125681.model.item.ItemType;
-import it.unicam.cs.mpgc.rpg125681.model.movement.MovementService;
 import it.unicam.cs.mpgc.rpg125681.model.world.Direction;
 import it.unicam.cs.mpgc.rpg125681.model.world.GameMap;
 import it.unicam.cs.mpgc.rpg125681.model.world.Position;
@@ -28,8 +27,9 @@ class ItemDropTest {
         GameMap map = room();
         Warrior hero = new Warrior(new Position(1, 1), 1);
         Enemy goblin = new Enemy(new Position(2, 1), 2, 1, 5, 1, new MeleeChaseStrategy(), EnemyType.GOBLIN);
-        return new GameWorld(map, hero, new ArrayList<>(List.of(goblin)),
-                new MovementService(map), new KillLog(), new Random(seed));
+        return new GameWorld.Builder(map, hero, new ArrayList<>(List.of(goblin)))
+                .random(new Random(seed))
+                .build();
     }
 
     @Test

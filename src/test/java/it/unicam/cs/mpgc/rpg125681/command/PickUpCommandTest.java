@@ -2,10 +2,8 @@ package it.unicam.cs.mpgc.rpg125681.command;
 
 import it.unicam.cs.mpgc.rpg125681.model.entity.Warrior;
 import it.unicam.cs.mpgc.rpg125681.model.game.GameWorld;
-import it.unicam.cs.mpgc.rpg125681.model.game.KillLog;
 import it.unicam.cs.mpgc.rpg125681.model.item.Item;
 import it.unicam.cs.mpgc.rpg125681.model.item.ItemType;
-import it.unicam.cs.mpgc.rpg125681.model.movement.MovementService;
 import it.unicam.cs.mpgc.rpg125681.model.world.GameMap;
 import it.unicam.cs.mpgc.rpg125681.model.world.Position;
 import org.junit.jupiter.api.Test;
@@ -19,7 +17,7 @@ class PickUpCommandTest {
 
     private GameWorld world(Warrior hero) {
         GameMap map = GameMap.fromRows(List.of("####", "#..#", "####"));
-        return new GameWorld(map, hero, List.of(), new MovementService(map), new KillLog(), new Random(0));
+        return new GameWorld.Builder(map, hero, List.of()).random(new Random(0)).build();
     }
 
     @Test
@@ -29,7 +27,7 @@ class PickUpCommandTest {
         Item potion = new Item(ItemType.POTION_MINOR);
         world.dropItem(new Position(1, 1), potion);
 
-        new PickUpCommand(world, hero).execute();
+        new PickUpCommand(world).execute();
 
         assertTrue(hero.getInventory().getItems().contains(potion));
         assertTrue(world.getItemsAt(new Position(1, 1)).isEmpty());
@@ -39,7 +37,7 @@ class PickUpCommandTest {
     void pickUpOnEmptyCellDoesNothing() {
         Warrior hero = new Warrior(new Position(1, 1), 1);
         GameWorld world = world(hero);
-        new PickUpCommand(world, hero).execute();
+        new PickUpCommand(world).execute();
         assertTrue(hero.getInventory().getItems().isEmpty());
     }
 }

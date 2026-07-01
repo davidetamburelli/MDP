@@ -7,7 +7,8 @@ public enum EnemyType {
     GOBLIN("Goblin", 18, 6, 10, BehaviorKind.MELEE, 0, AbsorbStat.ATTACK, 1, 0.30, 5),
     SKELETON("Skeleton", 28, 8, 14, BehaviorKind.MELEE, 0, AbsorbStat.MAX_HP, 6, 0.15, 8),
     ARCHER("Archer", 16, 7, 16, BehaviorKind.RANGED, 3, AbsorbStat.ATTACK, 2, 0.20, 10),
-    MAGE("Mage", 14, 11, 22, BehaviorKind.RANGED, 4, AbsorbStat.ATTACK, 3, 0.25, 15);
+    MAGE("Mage", 14, 11, 22, BehaviorKind.KITER, 4, AbsorbStat.ATTACK, 3, 0.25, 15),
+    GARGOYLE("Gargoyle", 40, 9, 20, BehaviorKind.SENTRY, 2, AbsorbStat.MAX_HP, 8, 0.20, 12);
 
     private final String displayName;
     private final int baseHp;

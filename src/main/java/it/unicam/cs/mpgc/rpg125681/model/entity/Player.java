@@ -1,8 +1,8 @@
 package it.unicam.cs.mpgc.rpg125681.model.entity;
 
+import it.unicam.cs.mpgc.rpg125681.model.entity.Wallet;
 import it.unicam.cs.mpgc.rpg125681.model.item.Inventory;
 import it.unicam.cs.mpgc.rpg125681.model.item.Item;
-import it.unicam.cs.mpgc.rpg125681.model.item.ItemCategory;
 import it.unicam.cs.mpgc.rpg125681.model.world.Position;
 
 import java.util.Objects;
@@ -20,11 +20,12 @@ public abstract class Player extends LivingEntity implements Attacker {
     private int absorbedMaxHp;
     private int gold;
     private final Inventory inventory;
+    private final Wallet wallet;
     private int maxDepthReached;
 
     protected Player(Position position, int id, int maxHp, int attackPower) {
         super(position, id, maxHp);
-        if (attackPower < 0) throw new IllegalArgumentException("Attack must be greater than 0.");
+        if (attackPower <= 0) throw new IllegalArgumentException("Attack must be greater than 0.");
         this.level = 1;
         this.exp = 0;
         this.maxExp = INITIAL_MAX_EXP;
@@ -33,6 +34,7 @@ public abstract class Player extends LivingEntity implements Attacker {
         this.absorbedMaxHp = 0;
         this.gold = 0;
         this.inventory = new Inventory();
+        this.wallet = new Wallet();
         this.maxDepthReached = 0;
     }
 
@@ -57,14 +59,11 @@ public abstract class Player extends LivingEntity implements Attacker {
     }
 
     public void addGold(int amount) {
-        if (amount < 0) throw new IllegalArgumentException("Gold to add must be non-negative.");
-        this.gold += amount;
+        this.wallet.add(amount);
     }
 
     public void spendGold(int amount) {
-        if (amount < 0) throw new IllegalArgumentException("Gold to spend must be non-negative.");
-        if (amount > this.gold) throw new IllegalArgumentException("Not enough gold.");
-        this.gold -= amount;
+        this.wallet.spend(amount);
     }
 
     public void absorb(AbsorbStat stat, int amount) {
@@ -85,13 +84,10 @@ public abstract class Player extends LivingEntity implements Attacker {
         if (!inventory.getItems().contains(item)) {
             throw new IllegalArgumentException("Item not in inventory.");
         }
-        if (item.getType().getCategory() != ItemCategory.POTION) {
-            throw new IllegalArgumentException("Only potions can be used.");
+        if (!item.getType().getCategory().isConsumable()) {
+            throw new IllegalArgumentException("Item is not consumable.");
         }
-        int healing = item.getType().isPercentage()
-                ? (int) Math.round(getMaxHp() * item.getType().getEffectValue() / 100.0)
-                : item.getType().getEffectValue();
-        heal(healing);
+        heal(item.getType().healingFor(getMaxHp()));
         inventory.remove(item);
     }
 
@@ -127,7 +123,7 @@ public abstract class Player extends LivingEntity implements Attacker {
     public int getMaxExp() { return this.maxExp; }
     public int getAbsorbedAttack() { return this.absorbedAttack; }
     public int getAbsorbedMaxHp() { return this.absorbedMaxHp; }
-    public int getGold() { return this.gold; }
+    public int getGold() { return this.wallet.getAmount(); }
     public Inventory getInventory() { return this.inventory; }
     public int getMaxDepthReached() { return this.maxDepthReached; }
 }

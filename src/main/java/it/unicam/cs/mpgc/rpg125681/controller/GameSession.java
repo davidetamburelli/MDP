@@ -1,5 +1,8 @@
 package it.unicam.cs.mpgc.rpg125681.controller;
 
+import it.unicam.cs.mpgc.rpg125681.command.Command;
+import it.unicam.cs.mpgc.rpg125681.command.MoveCommand;
+import it.unicam.cs.mpgc.rpg125681.command.PickUpCommand;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Player;
 import it.unicam.cs.mpgc.rpg125681.model.entity.PlayerClass;
 import it.unicam.cs.mpgc.rpg125681.model.game.GamePhase;
@@ -12,6 +15,9 @@ import it.unicam.cs.mpgc.rpg125681.model.item.ItemType;
 import it.unicam.cs.mpgc.rpg125681.model.shop.Shop;
 import it.unicam.cs.mpgc.rpg125681.model.world.Direction;
 import it.unicam.cs.mpgc.rpg125681.persistence.LeaderboardRepository;
+import it.unicam.cs.mpgc.rpg125681.persistence.SaveGame;
+import it.unicam.cs.mpgc.rpg125681.persistence.SessionRepository;
+import it.unicam.cs.mpgc.rpg125681.persistence.SessionState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +31,7 @@ public class GameSession {
     private final LeaderboardRepository leaderboard;
     private final Shop shop;
     private final List<SessionObserver> observers = new ArrayList<>();
+    private final SessionRepository sessionRepository;
 
     private GamePhase phase = GamePhase.MENU;
     private Player player;
@@ -32,10 +39,11 @@ public class GameSession {
     private int depth;
     private RunRecord lastRun;
 
-    public GameSession(GameWorldFactory factory, LeaderboardRepository leaderboard, Shop shop) {
+    public GameSession(GameWorldFactory factory, LeaderboardRepository leaderboard, Shop shop, SessionRepository sessionRepository) {
         this.factory = Objects.requireNonNull(factory, "factory");
         this.leaderboard = Objects.requireNonNull(leaderboard, "leaderboard");
         this.shop = Objects.requireNonNull(shop, "shop");
+        this.sessionRepository = Objects.requireNonNull(sessionRepository, "sessionRepository");
     }
 
     public void addObserver(SessionObserver observer) {
@@ -64,7 +72,18 @@ public class GameSession {
         if (phase != GamePhase.DUNGEON || world.isOver()) {
             return;
         }
-        world.playerTurn(direction);
+        executeAndResolve(new MoveCommand(world, direction));
+    }
+
+    public void handlePickUp() {
+        if (phase != GamePhase.DUNGEON || world.isOver()) {
+            return;
+        }
+        executeAndResolve(new PickUpCommand(world));
+    }
+
+    private void executeAndResolve(Command action) {
+        action.execute();
         GameStatus status = world.status();
         if (status == GameStatus.WON && depth < FINAL_DEPTH) {
             descend();
@@ -132,4 +151,33 @@ public class GameSession {
             observer.onSessionChanged(this);
         }
     }
+
+    public void save(String slot) {
+        if (phase != GamePhase.HUB && phase != GamePhase.DUNGEON) {
+            throw new IllegalStateException("Can only save from hub or dungeon.");
+        }
+        SaveGame dungeon = (world != null) ? SaveGame.from(world) : null;
+        Player profile = (world != null) ? null : player;
+        sessionRepository.save(slot, new SessionState(phase, depth, profile, dungeon));
+    }
+
+    public void load(String slot) {
+        SessionState state = sessionRepository.load(slot);
+        this.phase = state.phase();
+        this.depth = state.depth();
+        if (state.dungeon() != null) {
+            this.world = state.dungeon().toGameWorld();
+            this.player = world.getPlayer();
+        } else {
+            this.world = null;
+            this.player = state.profile();
+        }
+        this.lastRun = null;
+        notifyObservers();
+    }
+
+    public List<String> savedSlots() {
+        return sessionRepository.listSlots();
+    }
+
 }

@@ -1,9 +1,7 @@
 package it.unicam.cs.mpgc.rpg125681.command;
 
-import it.unicam.cs.mpgc.rpg125681.model.entity.Player;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Warrior;
-import it.unicam.cs.mpgc.rpg125681.model.movement.MoveOutcome;
-import it.unicam.cs.mpgc.rpg125681.model.movement.MovementService;
+import it.unicam.cs.mpgc.rpg125681.model.game.GameWorld;
 import it.unicam.cs.mpgc.rpg125681.model.world.Direction;
 import it.unicam.cs.mpgc.rpg125681.model.world.GameMap;
 import it.unicam.cs.mpgc.rpg125681.model.world.Position;
@@ -14,23 +12,23 @@ import java.util.List;
 
 public class MoveCommandTest {
 
-    private MovementService service() {
-        return new MovementService(GameMap.fromRows(List.of("#####", "#...#", "#.#.#", "#...#", "#####")));
+    private GameWorld world(Warrior hero) {
+        GameMap map = GameMap.fromRows(List.of("#####", "#...#", "#...#", "#...#", "#####"));
+        return new GameWorld(map, hero, List.of());
     }
 
     @Test
-    void outcomeIsNullBeforeExecute() {
-        Player hero = new Warrior(new Position(1, 1), 1);
-        MoveCommand command = new MoveCommand(service(), hero, Direction.RIGHT);
-        assertNull(command.getLastOutcome());
-    }
-
-    @Test
-    void executeMovesEntityAndCapturesOutcome() {
-        Player hero = new Warrior(new Position(1, 1), 1);
-        MoveCommand command = new MoveCommand(service(), hero, Direction.RIGHT);
-        command.execute();
-        assertEquals(MoveOutcome.MOVED, command.getLastOutcome());
+    void executeMovesPlayerAsATurn() {
+        Warrior hero = new Warrior(new Position(1, 1), 1);
+        new MoveCommand(world(hero), Direction.RIGHT).execute();
         assertEquals(new Position(2, 1), hero.getPosition());
     }
+
+    @Test
+    void executeIntoWallLeavesPlayerInPlace() {
+        Warrior hero = new Warrior(new Position(1, 1), 1);
+        new MoveCommand(world(hero), Direction.UP).execute();
+        assertEquals(new Position(1, 1), hero.getPosition());
+    }
+
 }

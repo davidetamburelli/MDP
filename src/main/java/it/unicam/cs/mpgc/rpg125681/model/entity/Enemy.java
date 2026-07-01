@@ -16,8 +16,8 @@ public class Enemy extends LivingEntity implements Attacker {
     public Enemy(Position position, int id, int maxHp, int attackPower, int expReward,
                  BehaviorStrategy behavior, EnemyType type) {
         super(position, id, maxHp);
-        if (attackPower < 0) throw new IllegalArgumentException("Attack must be greater than 0.");
-        if (expReward < 0) throw new IllegalArgumentException("Exp must be greater than 0.");
+        if (attackPower <= 0) throw new IllegalArgumentException("Attack must be greater than 0.");
+        if (expReward <= 0) throw new IllegalArgumentException("Exp must be greater than 0.");
         this.attackPower = attackPower;
         this.expReward = expReward;
         this.behavior = Objects.requireNonNull(behavior, "behavior");

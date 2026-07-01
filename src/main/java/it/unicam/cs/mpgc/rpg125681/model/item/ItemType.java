@@ -51,7 +51,7 @@ public enum ItemType {
         this.percentage = percentage;
         this.basePrice = basePrice;
         this.droppable = droppable;
-        this.allowedClasses = allowedClasses;
+        this.allowedClasses = Set.copyOf(allowedClasses);
     }
 
     public String getDisplayName() { return displayName; }
@@ -61,6 +61,12 @@ public enum ItemType {
     public int getBasePrice() { return basePrice; }
     public boolean isDroppable() { return droppable; }
     public Set<PlayerClass> getAllowedClasses() { return allowedClasses; }
+
+    public int healingFor(int maxHp) {
+        return percentage
+                ? (int) Math.round(maxHp * effectValue / 100.0)
+                : effectValue;
+    }
 
     public static ItemType getRandomDrop(Random random) {
         List<ItemType> droppableItems = Arrays.stream(values())

@@ -1,7 +1,7 @@
 package it.unicam.cs.mpgc.rpg125681.view;
 
-import it.unicam.cs.mpgc.rpg125681.controller.GameController;
-import it.unicam.cs.mpgc.rpg125681.controller.GameObserver;
+import it.unicam.cs.mpgc.rpg125681.controller.GameSession;
+import it.unicam.cs.mpgc.rpg125681.controller.SessionObserver;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Enemy;
 import it.unicam.cs.mpgc.rpg125681.model.entity.Player;
 import it.unicam.cs.mpgc.rpg125681.model.game.GameStatus;
@@ -17,20 +17,20 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.scene.layout.Pane;
 
-public class GameView implements GameObserver{
+public class GameView implements SessionObserver {
 
     private static final int TILE = 48;
 
-    private final GameController controller;
+    private final GameSession session;
     private final Canvas canvas;
     private final Pane root;
 
-    public GameView(GameController controller){
-        this.controller = controller;
+    public GameView(GameSession session) {
+        this.session = session;
         this.canvas = new Canvas(640, 480);
         this.root = new Pane(canvas);
-        controller.addObserver(this);
-        if (controller.getWorld() != null) {
+        session.addObserver(this);
+        if (session.getWorld() != null) {
             render();
         }
     }
@@ -39,21 +39,22 @@ public class GameView implements GameObserver{
 
     public void handleKey(KeyCode code){
         switch (code){
-            case UP, W -> controller.handleMove(Direction.UP);
-            case DOWN, S -> controller.handleMove(Direction.DOWN);
-            case LEFT, A -> controller.handleMove(Direction.LEFT);
-            case RIGHT, D -> controller.handleMove(Direction.RIGHT);
+            case UP, W -> session.handleMove(Direction.UP);
+            case DOWN, S -> session.handleMove(Direction.DOWN);
+            case LEFT, A -> session.handleMove(Direction.LEFT);
+            case RIGHT, D -> session.handleMove(Direction.RIGHT);
+            case E, SPACE -> session.handlePickUp();
             default -> {}
         }
     }
 
     @Override
-    public void onGameChanged(GameController controller) {
+    public void onSessionChanged(GameSession session) {
         render();
     }
 
     private void render(){
-        GameWorld world = controller.getWorld();
+        GameWorld world = session.getWorld();
         if (world == null) {
             return;
         }

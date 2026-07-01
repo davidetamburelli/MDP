@@ -22,29 +22,54 @@ public class GameWorld {
     private final Random random;
     private final Map<Position, List<Item>> droppedItems = new HashMap<>();
 
-    public GameWorld(GameMap map, Player player, List<Enemy> enemies, MovementService movementService) {
-        this(map, player, enemies, movementService, new KillLog());
+    public GameWorld(GameMap map, Player player, List<Enemy> enemies) {
+        this(new Builder(map, player, enemies));
     }
 
-    public GameWorld(GameMap map, Player player, List<Enemy> enemies, MovementService movementService, KillLog killLog) {
-        this(map, player, enemies, movementService, killLog, new Random());
-    }
-
-    public GameWorld(GameMap map, Player player, List<Enemy> enemies, MovementService movementService,
-                     KillLog killLog, Random random) {
-        this(map, player, enemies, movementService, killLog, random, new HashMap<>());
-    }
-
-    public GameWorld(GameMap map, Player player, List<Enemy> enemies, MovementService movementService,
-                     KillLog killLog, Random random, Map<Position, List<Item>> droppedItems) {
-        this.map = Objects.requireNonNull(map, "map");
-        this.player = Objects.requireNonNull(player, "player");
-        this.enemies = new ArrayList<>(Objects.requireNonNull(enemies, "enemies"));
-        this.movementService = Objects.requireNonNull(movementService, "movementService");
-        this.killLog = Objects.requireNonNull(killLog, "killLog");
-        this.random = Objects.requireNonNull(random, "random");
-        Objects.requireNonNull(droppedItems, "droppedItems")
+    private GameWorld(Builder builder) {
+        this.map = Objects.requireNonNull(builder.map, "map");
+        this.player = Objects.requireNonNull(builder.player, "player");
+        this.enemies = new ArrayList<>(Objects.requireNonNull(builder.enemies, "enemies"));
+        this.movementService = new MovementService(this.map);
+        this.killLog = Objects.requireNonNull(builder.killLog, "killLog");
+        this.random = Objects.requireNonNull(builder.random, "random");
+        Objects.requireNonNull(builder.droppedItems, "droppedItems")
                 .forEach((position, items) -> this.droppedItems.put(position, new ArrayList<>(items)));
+    }
+
+    public static final class Builder {
+
+        private final GameMap map;
+        private final Player player;
+        private final List<Enemy> enemies;
+        private KillLog killLog = new KillLog();
+        private Random random = new Random();
+        private Map<Position, List<Item>> droppedItems = new HashMap<>();
+
+        public Builder(GameMap map, Player player, List<Enemy> enemies) {
+            this.map = map;
+            this.player = player;
+            this.enemies = enemies;
+        }
+
+        public Builder killLog(KillLog killLog) {
+            this.killLog = killLog;
+            return this;
+        }
+
+        public Builder random(Random random) {
+            this.random = random;
+            return this;
+        }
+
+        public Builder droppedItems(Map<Position, List<Item>> droppedItems) {
+            this.droppedItems = droppedItems;
+            return this;
+        }
+
+        public GameWorld build() {
+            return new GameWorld(this);
+        }
     }
 
     public void playerTurn(Direction direction) {

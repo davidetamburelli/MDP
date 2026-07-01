@@ -1,25 +1,18 @@
 package it.unicam.cs.mpgc.rpg125681.model.entity.behavior;
 
-import it.unicam.cs.mpgc.rpg125681.model.entity.Enemy;
-import it.unicam.cs.mpgc.rpg125681.model.entity.Player;
-import it.unicam.cs.mpgc.rpg125681.model.movement.MovementService;
+public class RangedStrategy extends ApproachAndAttackStrategy {
 
-import java.io.Serializable;
+    private static final long serialVersionUID = 1L;
 
-public class RangedStrategy implements BehaviorStrategy, Serializable{
-    private final int attackRange;
+    private final int range;
 
-    public RangedStrategy(int attackRange) {
-        if (attackRange < 1) throw new IllegalArgumentException("Attack range must be greater than 0.");
-        this.attackRange = attackRange;
+    public RangedStrategy(int range) {
+        if (range < 1) throw new IllegalArgumentException("Attack range must be greater than 0.");
+        this.range = range;
     }
 
     @Override
-    public void act(Enemy self, Player target, MovementService movement) {
-        if (BehaviorStrategy.distance(self.getPosition(), target.getPosition()) <= attackRange) {
-            self.attack(target);
-        } else {
-            movement.move(self, BehaviorStrategy.stepToward(self.getPosition(), target.getPosition()));
-        }
+    protected int attackRange() {
+        return this.range;
     }
 }

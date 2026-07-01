@@ -4,11 +4,16 @@ import it.unicam.cs.mpgc.rpg125681.model.entity.PlayerClass;
 import it.unicam.cs.mpgc.rpg125681.model.game.GamePhase;
 import it.unicam.cs.mpgc.rpg125681.model.game.GameWorldFactory;
 import it.unicam.cs.mpgc.rpg125681.model.game.RunOutcome;
+import it.unicam.cs.mpgc.rpg125681.model.item.Item;
+import it.unicam.cs.mpgc.rpg125681.model.item.ItemType;
 import it.unicam.cs.mpgc.rpg125681.model.shop.Shop;
 import it.unicam.cs.mpgc.rpg125681.model.world.Direction;
 import it.unicam.cs.mpgc.rpg125681.model.world.MapGenerator;
+import it.unicam.cs.mpgc.rpg125681.model.world.Position;
+import it.unicam.cs.mpgc.rpg125681.persistence.FileSessionRepository;
 import it.unicam.cs.mpgc.rpg125681.persistence.JsonLeaderboardRepository;
 import it.unicam.cs.mpgc.rpg125681.persistence.LeaderboardRepository;
+import it.unicam.cs.mpgc.rpg125681.persistence.SessionRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -25,7 +30,8 @@ class GameSessionTest {
     private GameSession newSession() {
         GameWorldFactory factory = new GameWorldFactory(new MapGenerator(new Random(7)));
         LeaderboardRepository leaderboard = new JsonLeaderboardRepository(tempDir.resolve("lb.json"));
-        return new GameSession(factory, leaderboard, new Shop());
+        SessionRepository sessions = new FileSessionRepository(tempDir);
+        return new GameSession(factory, leaderboard, new Shop(), sessions);
     }
 
     @Test
@@ -82,5 +88,71 @@ class GameSessionTest {
         assertSame(profile, session.getPlayer());
         assertNull(session.getWorld());
         assertEquals(1, session.getPlayer().getMaxDepthReached());
+    }
+
+    @Test
+    void savingFromMenuThrows() {
+        assertThrows(IllegalStateException.class, () -> newSession().save("slot1"));
+    }
+
+    @Test
+    void saveAndLoadFromHubRestoresProfile() {
+        GameSession session = newSession();
+        session.newGame(PlayerClass.WARRIOR);
+        session.getPlayer().addGold(120);
+        session.enterDungeon();
+        session.returnToHub();                 // maxDepthReached = 1
+        session.save("slot1");
+
+        GameSession loaded = newSession();
+        loaded.load("slot1");
+        assertEquals(GamePhase.HUB, loaded.getPhase());
+        assertNull(loaded.getWorld());
+        assertEquals(120, loaded.getPlayer().getGold());
+        assertEquals(1, loaded.getPlayer().getMaxDepthReached());
+    }
+
+    @Test
+    void saveAndLoadFromDungeonResumesRun() {
+        GameSession session = newSession();
+        session.newGame(PlayerClass.WARRIOR);
+        session.enterDungeon();
+        int enemyCount = session.getWorld().getEnemies().size();
+        session.save("slot1");
+
+        GameSession loaded = newSession();
+        loaded.load("slot1");
+        assertEquals(GamePhase.DUNGEON, loaded.getPhase());
+        assertEquals(1, loaded.getDepth());
+        assertNotNull(loaded.getWorld());
+        assertEquals(enemyCount, loaded.getWorld().getEnemies().size());
+    }
+
+    @Test
+    void handlePickUpCollectsDroppedItems() {
+        GameSession session = newSession();
+        session.newGame(PlayerClass.WARRIOR);
+        session.enterDungeon();
+        Position pos = session.getPlayer().getPosition();
+        session.getWorld().dropItem(pos, new Item(ItemType.POTION_MINOR));
+        int before = session.getPlayer().getInventory().getItems().size();
+
+        session.handlePickUp();
+
+        assertEquals(before + 1, session.getPlayer().getInventory().getItems().size());
+    }
+
+    @Test
+    void savingDungeonPreservesDroppedItems() {
+        GameSession session = newSession();
+        session.newGame(PlayerClass.WARRIOR);
+        session.enterDungeon();
+        Position pos = session.getPlayer().getPosition();
+        session.getWorld().dropItem(pos, new Item(ItemType.POTION_MINOR));
+        session.save("slot1");
+
+        GameSession loaded = newSession();
+        loaded.load("slot1");
+        assertEquals(1, loaded.getWorld().getItemsAt(pos).size());
     }
 }

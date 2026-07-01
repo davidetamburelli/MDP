@@ -34,7 +34,7 @@ public class GameWorldTest {
     void freeMoveUpdatesPlayerPosition() {
         GameMap map = room();
         Warrior hero = new Warrior(new Position(1, 1), 1);
-        GameWorld world = new GameWorld(map, hero, List.of(), new MovementService(map));
+        GameWorld world = new GameWorld(map, hero, List.of());
         world.playerTurn(Direction.RIGHT);
         assertEquals(new Position(2, 1), hero.getPosition());
     }
@@ -44,7 +44,7 @@ public class GameWorldTest {
         GameMap map = room();
         Warrior hero = new Warrior(new Position(1, 1), 1);
         Enemy enemy = goblin(new Position(2, 1), 2, 30);
-        GameWorld world = new GameWorld(map, hero, List.of(enemy), new MovementService(map));
+        GameWorld world = new GameWorld(map, hero, List.of(enemy));
         world.playerTurn(Direction.RIGHT);
         assertEquals(21, world.getEnemies().get(0).getHp());
         assertEquals(new Position(1, 1), hero.getPosition());
@@ -55,7 +55,7 @@ public class GameWorldTest {
         GameMap map = room();
         Warrior hero = new Warrior(new Position(1, 1), 1);
         Enemy enemy = goblin(new Position(2, 1), 2, 8);
-        GameWorld world = new GameWorld(map, hero, List.of(enemy), new MovementService(map));
+        GameWorld world = new GameWorld(map, hero, List.of(enemy));
         world.playerTurn(Direction.RIGHT);
         assertTrue(world.getEnemies().isEmpty());
         assertEquals(2, hero.getLevel());
@@ -67,7 +67,7 @@ public class GameWorldTest {
         GameMap map = room();
         Warrior hero = new Warrior(new Position(1, 1), 1);
         Enemy enemy = goblin(new Position(3, 1), 2, 30);
-        GameWorld world = new GameWorld(map, hero, List.of(enemy), new MovementService(map));
+        GameWorld world = new GameWorld(map, hero, List.of(enemy));
         world.playerTurn(Direction.DOWN);
         assertEquals(new Position(1, 2), hero.getPosition());
         assertEquals(new Position(2, 1), world.getEnemies().get(0).getPosition());
@@ -78,7 +78,7 @@ public class GameWorldTest {
         GameMap map = room();
         Warrior hero = new Warrior(new Position(1, 1), 1);
         Enemy enemy = goblin(new Position(2, 1), 2, 30);
-        GameWorld world = new GameWorld(map, hero, List.of(enemy), new MovementService(map));
+        GameWorld world = new GameWorld(map, hero, List.of(enemy));
         assertThrows(UnsupportedOperationException.class, () -> world.getEnemies().clear());
     }
 
@@ -87,7 +87,7 @@ public class GameWorldTest {
         GameMap map = room();
         Warrior hero = new Warrior(new Position(1, 1), 1);
         assertThrows(NullPointerException.class,
-                () -> new GameWorld(null, hero, List.of(), new MovementService(map)));
+                () -> new GameWorld(null, hero, List.of()));
     }
 
     @Test
@@ -95,7 +95,7 @@ public class GameWorldTest {
         GameMap map = room();
         Warrior hero = new Warrior(new Position(1, 1), 1);
         Enemy enemy = goblin(new Position(2, 1), 2, 30);
-        GameWorld world = new GameWorld(map, hero, List.of(enemy), new MovementService(map));
+        GameWorld world = new GameWorld(map, hero, List.of(enemy));
         assertEquals(GameStatus.RUNNING, world.status());
     }
 
@@ -104,7 +104,7 @@ public class GameWorldTest {
         GameMap map = room();
         Warrior hero = new Warrior(new Position(1, 1), 1);
         Enemy enemy = goblin(new Position(2, 1), 2, 8);
-        GameWorld world = new GameWorld(map, hero, List.of(enemy), new MovementService(map));
+        GameWorld world = new GameWorld(map, hero, List.of(enemy));
         world.playerTurn(Direction.RIGHT);
         assertEquals(GameStatus.WON, world.status());
     }
@@ -114,7 +114,7 @@ public class GameWorldTest {
         GameMap map = room();
         Sorcerer hero = new Sorcerer(new Position(1, 1), 1);
         Enemy boss = new Enemy(new Position(2, 1), 2, 80, 30, 50, new MeleeChaseStrategy(), EnemyType.SKELETON);
-        GameWorld world = new GameWorld(map, hero, List.of(boss), new MovementService(map));
+        GameWorld world = new GameWorld(map, hero, List.of(boss));
         world.playerTurn(Direction.RIGHT);
         world.playerTurn(Direction.RIGHT);
         assertEquals(GameStatus.LOST, world.status());
@@ -125,7 +125,7 @@ public class GameWorldTest {
         GameMap map = room();
         Sorcerer hero = new Sorcerer(new Position(1, 1), 1);
         Enemy boss = new Enemy(new Position(2, 1), 2, 80, 30, 50, new MeleeChaseStrategy(), EnemyType.SKELETON);
-        GameWorld world = new GameWorld(map, hero, List.of(boss), new MovementService(map));
+        GameWorld world = new GameWorld(map, hero, List.of(boss));
         world.playerTurn(Direction.RIGHT);
         world.playerTurn(Direction.RIGHT);
         int bossHpAfterDeath = world.getEnemies().get(0).getHp();
@@ -138,7 +138,7 @@ public class GameWorldTest {
         GameMap map = room();
         Warrior hero = new Warrior(new Position(1, 1), 1);
         Enemy enemy = goblin(new Position(2, 1), 2, 8);
-        GameWorld world = new GameWorld(map, hero, List.of(enemy), new MovementService(map));
+        GameWorld world = new GameWorld(map, hero, List.of(enemy));
         world.playerTurn(Direction.RIGHT);
         assertEquals(5, hero.getGold());
     }

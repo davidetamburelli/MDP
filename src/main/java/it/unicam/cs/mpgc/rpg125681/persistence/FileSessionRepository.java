@@ -9,22 +9,22 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class FileGameRepository implements GameRepository {
+public class FileSessionRepository implements SessionRepository {
 
-    private static final String EXTENSION = ".sav";
+    private static final String EXTENSION = ".session";
     private final Path directory;
 
-    public FileGameRepository(Path directory) {
+    public FileSessionRepository(Path directory) {
         this.directory = Objects.requireNonNull(directory, "directory");
     }
 
     @Override
-    public void save(String slot, SaveGame data) {
-        Objects.requireNonNull(data, "data");
+    public void save(String slot, SessionState state) {
+        Objects.requireNonNull(state, "state");
         try {
             Files.createDirectories(directory);
             try (ObjectOutputStream out = new ObjectOutputStream(Files.newOutputStream(fileFor(slot)))) {
-                out.writeObject(data);
+                out.writeObject(state);
             }
         } catch (IOException e) {
             throw new PersistenceException("Save failed for slot: " + slot, e);
@@ -32,9 +32,9 @@ public class FileGameRepository implements GameRepository {
     }
 
     @Override
-    public SaveGame load(String slot) {
+    public SessionState load(String slot) {
         try (ObjectInputStream in = new ObjectInputStream(Files.newInputStream(fileFor(slot)))) {
-            return (SaveGame) in.readObject();
+            return (SessionState) in.readObject();
         } catch (IOException | ClassNotFoundException e) {
             throw new PersistenceException("Load failed for slot: " + slot, e);
         }
@@ -53,7 +53,7 @@ public class FileGameRepository implements GameRepository {
                     .sorted()
                     .toList();
         } catch (IOException e) {
-            throw new PersistenceException("Saves folder couldn't be read", e);
+            throw new PersistenceException("Sessions folder couldn't be read", e);
         }
     }
 
