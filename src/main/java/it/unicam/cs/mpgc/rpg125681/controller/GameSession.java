@@ -11,6 +11,7 @@ import it.unicam.cs.mpgc.rpg125681.model.game.GameWorld;
 import it.unicam.cs.mpgc.rpg125681.model.game.GameWorldFactory;
 import it.unicam.cs.mpgc.rpg125681.model.game.RunOutcome;
 import it.unicam.cs.mpgc.rpg125681.model.game.RunRecord;
+import it.unicam.cs.mpgc.rpg125681.model.item.Item;
 import it.unicam.cs.mpgc.rpg125681.model.item.ItemType;
 import it.unicam.cs.mpgc.rpg125681.model.shop.Shop;
 import it.unicam.cs.mpgc.rpg125681.model.world.Direction;
@@ -116,6 +117,7 @@ public class GameSession {
     }
 
     public void returnToHub() {
+        player.fullHeal();
         this.world = null;
         this.depth = 0;
         this.phase = GamePhase.HUB;
@@ -128,6 +130,37 @@ public class GameSession {
 
     public void buy(ItemType type) {
         shop.buy(player, type, player.getMaxDepthReached());
+        notifyObservers();
+    }
+
+    public void equip(Item item) {
+        player.equip(item);
+        notifyObservers();
+    }
+
+    public void useItem(Item item) {
+        player.useItem(item);
+        notifyObservers();
+    }
+
+    public void usePotion() {
+        if (phase != GamePhase.DUNGEON || world.isOver()) {
+            return;
+        }
+        player.getInventory().getItems().stream()
+                .filter(item -> item.getType().getCategory().isConsumable())
+                .findFirst()
+                .ifPresent(potion -> {
+                    player.useItem(potion);
+                    notifyObservers();
+                });
+    }
+
+    public void openBestiary() {
+        if (phase != GamePhase.HUB) {
+            throw new IllegalStateException("Bestiary reachable only from hub.");
+        }
+        phase = GamePhase.BESTIARY;
         notifyObservers();
     }
 

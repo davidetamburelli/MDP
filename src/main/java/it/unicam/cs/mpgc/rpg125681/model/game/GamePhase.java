@@ -5,5 +5,6 @@ public enum GamePhase {
     HUB,
     DUNGEON,
     RUN_RECAP,
-    LEADERBOARD
+    LEADERBOARD,
+    BESTIARY
 }

@@ -106,6 +106,14 @@ public abstract class Player extends LivingEntity implements Attacker {
         }
     }
 
+    public void equip(Item item) {
+        Objects.requireNonNull(item, "item");
+        if (!item.getType().getAllowedClasses().contains(getPlayerClass())) {
+            throw new IllegalArgumentException("This class cannot equip " + item.getType().getDisplayName() + ".");
+        }
+        inventory.equip(item);
+    }
+
     public int getDefense() {
         Item armor = inventory.getEquippedArmor();
         return armor != null ? armor.getType().getEffectValue() : 0;
